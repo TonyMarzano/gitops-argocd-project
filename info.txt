@@ -1,0 +1,3 @@
+Comando para ejecutar playbook de Ansible:
+
+Ansible-playbook <nombre-del-playbook> -v
