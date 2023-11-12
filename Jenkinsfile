@@ -6,7 +6,7 @@ pipeline{
         DOCKERHUB_USERNAME = "SantinoTona"
         APP_NAME = "gitops-argocd-app"
         IMAGE_TAG = "${BUILD_NUMBER}"
-        IMAGE_NAME = "${DOCKERHUB_USERNAME}" + "/" + "${APP_NAME}"
+        IMAGE_NAME = "${DOCKERHUB_USERNAME}" + "/" + "${APP_NAME}".toLowerCase() // Convertido a minúsculas
         REGISTRY_CREDS = 'dockerhub'
     }
 
@@ -32,6 +32,17 @@ pipeline{
                 script{
 
                     docker_image = docker.build "${IMAGE_NAME}"
+                }
+            }
+        }
+        stage('Push docker image'){
+            steps{
+                script{
+
+                    docker.withRegistry('',REGISTRY_CREDS){
+                        docker_image.push("${BUILD_NUMBER}".toLowerCase()) // Convertido a minúsculas
+                        docker_image.push('latest')
+                    }
                 }
             }
         }
