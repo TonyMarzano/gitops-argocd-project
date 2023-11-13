@@ -14,7 +14,7 @@ pipeline {
             steps {
                 script {
                     echo 'Cleaning up workspace'
-                    deleteDir()
+                    cleanWs()
                 }
             }
         }
@@ -23,37 +23,33 @@ pipeline {
             steps {
                 script {
                     echo 'Checking out SCM'
-                    git credentialsId: 'github'
-                    url: 'https://github.com/TonyMarzano/gitops-argocd-project.git'
-                    branch: '*/main'
+                    git credentialsId: 'github', url: 'https://github.com/TonyMarzano/gitops-argocd-project.git', branch: 'main'
                 }
             }
         }
 
-        //stage('Build Docker Image') {
-          //  steps {
-            //    script {
-              //      echo 'Building Docker Image'
-                //    sh "docker build -t ${IMAGE_NAME} ."
-                 //}
-            //}
-        //}
-
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    echo 'Building Docker Image'
+                    sh "docker build -t ${IMAGE_NAME} ."
+                }
+            }
+        }
 
         stage('Push docker image') {
             steps {
                 script {
                     echo 'Pushing Docker Image'
-                    // docker.withRegistry('', REGISTRY_CREDS) {
-                    //     docker_image.push("${BUILD_NUMBER}".toLowerCase())
-                    //     docker_image.push('latest')
-                    // }
+                    docker.withRegistry('', REGISTRY_CREDS) {
+                        docker_image.push("${BUILD_NUMBER}".toLowerCase())
+                        docker_image.push('latest')
+                    }
                 }
             }
         }
     }
 }
-
 
 
 
