@@ -8,7 +8,7 @@
     },
     "jenkins-runner.hostConfigs": {
         "jenkins-master": {
-            "url": "http://18.191.240.49:8080/",
+            "url": "http://18.189.219.136:8080/",
             "user": "Santino",
             "password": "Santino",
             "useCrumbIssuer": true
