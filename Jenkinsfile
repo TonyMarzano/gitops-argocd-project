@@ -30,14 +30,14 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    echo 'Building Docker Image'
-                    sh "docker build -t ${IMAGE_NAME} ."
-                 }
-            }
-        }
+        //stage('Build Docker Image') {
+          //  steps {
+            //    script {
+              //      echo 'Building Docker Image'
+                //    sh "docker build -t ${IMAGE_NAME} ."
+                 //}
+            //}
+        //}
 
 
         stage('Push docker image') {
