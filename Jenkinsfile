@@ -30,9 +30,9 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
+                echo 'Building Docker Image'
                 script {
-                    echo 'Building Docker Image'
-                    sh "docker build -t ${IMAGE_NAME} ."
+                    sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
                 }
             }
         }
@@ -41,10 +41,11 @@ pipeline {
             steps {
                 script {
                     echo 'Pushing Docker Image'
+                    echo "IMAGE_TAG: ${IMAGE_TAG}" // Add this line for debugging
                     docker.withRegistry('', REGISTRY_CREDS) {
-                        sh "docker push ${IMAGE_NAME}:${BUILD_NUMBER}"
+                        sh "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
                         sh "docker push ${IMAGE_NAME}:latest"
-                    }
+                    }   
                 }
             }
         }
