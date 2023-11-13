@@ -32,7 +32,7 @@ pipeline {
             steps {
                 script {
                     echo 'Building Docker Image'
-                    docker_image = "docker build -t ${IMAGE_NAME} ."
+                    sh "docker build -t ${IMAGE_NAME} ."
                 }
             }
         }
@@ -42,8 +42,8 @@ pipeline {
                 script {
                     echo 'Pushing Docker Image'
                     docker.withRegistry('', REGISTRY_CREDS) {
-                        docker_image.push("${BUILD_NUMBER}".toLowerCase())
-                        docker_image.push('latest')
+                        sh "docker push ${IMAGE_NAME}:${BUILD_NUMBER}"
+                        sh "docker push ${IMAGE_NAME}:latest"
                     }
                 }
             }
