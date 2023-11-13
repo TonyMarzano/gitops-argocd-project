@@ -6,7 +6,7 @@ pipeline{
         DOCKERHUB_USERNAME = "SantinoTona"
         APP_NAME = "gitops-argocd-app"
         IMAGE_TAG = "${BUILD_NUMBER}"
-        IMAGE_NAME = "${DOCKERHUB_USERNAME}" + "/" + "${APP_NAME}".toLowerCase() // Convertido a minúsculas
+        IMAGE_NAME = "${DOCKERHUB_USERNAME}/${APP_NAME}".toLowerCase()  // Convertido a minúsculas
         REGISTRY_CREDS = 'dockerhub'
     }
 
@@ -48,6 +48,7 @@ pipeline{
         }
     }
 }
+
 
 
 // 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
