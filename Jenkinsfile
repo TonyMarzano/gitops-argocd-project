@@ -37,6 +37,16 @@ pipeline {
             }
         }
 
+        stage('Build Docker Image Latest') {
+            steps {
+                echo 'Building Docker Image with latest tag'
+                script {
+                        sh "docker build -t ${IMAGE_NAME}:latest ."
+                }
+            }
+        }
+
+
         stage('Push docker image') {
             steps {
                 script {
@@ -69,6 +79,23 @@ pipeline {
                     sed -i 's/${APP_NAME}.*/${APP_NAME}:${IMAGE_TAG}/g' deployment.yaml
                     cat deployment.yaml
                     """
+                }
+            }
+        }
+
+        stage('Push the changed deployment file to Git'){
+            steps{
+                script{
+                    sh """
+                     git config --global user.name "TonyMarzano"
+                     git config --global user.email "marzanosantino@gmail.com"
+                     git add deployment.yaml
+                     git commit -m "Updated the deployment.yaml"
+                     
+                    """
+                    withCredentials([gitUsernamePassword(credentialsId: 'github', gitToolName: 'Default')]) {
+                        git push "https://github.com/TonyMarzano/gitops-argocd-project.git" main
+                    }
                 }
             }
         }
