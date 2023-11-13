@@ -25,7 +25,7 @@ pipeline {
                     echo 'Checking out SCM'
                     git credentialsId: 'github'
                     url: 'https://github.com/TonyMarzano/gitops-argocd-project.git'
-                    branch: 'main'
+                    branch: '*/main'
                 }
             }
         }
