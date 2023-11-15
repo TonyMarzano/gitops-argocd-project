@@ -2,60 +2,6 @@ Comando para ejecutar playbook de Ansible:
 
 Ansible-playbook <nombre-del-playbook> -v
 
-pipeline{
-    agent any
-
-    environment{
-
-        DOCKERHUB_USERNAME = "SantinoTona"
-        APP_NAME = "gitops-argocd-app"
-        IMAGE_TAG = "${BUILD_NUMBER}"
-        IMAGE_NAME = "${DOCKERHUB_USERNAME}/${APP_NAME}".toLowerCase()  // Convertido a minúsculas
-        REGISTRY_CREDS = 'dockerhub'
-    }
-
-    stages {
-        stage('Cleanup workspace') {
-            steps {
-                script {
-                    deleteDir()
-                }
-            }
-        }
-        stage('Checkout SCM'){
-            steps{
-                script{
-                    git credentialsId: 'github',
-                    url: 'https://github.com/TonyMarzano/gitops-argocd-project.git',
-                    branch: 'main'
-                }
-            }
-        }
-        stage('Build Docker Image'){
-            steps{
-                script{
-
-                    docker_image = docker.build "${IMAGE_NAME}"
-                }
-            }
-        }
-        stage('Push docker image'){
-            steps{
-                script{
-
-                    docker.withRegistry('',REGISTRY_CREDS){
-                        docker_image.push("${BUILD_NUMBER}".toLowerCase()) // Convertido a minúsculas
-                        docker_image.push('latest')
-                    }
-                }
-            }
-        }
-    }
-}
-
-
-
-
 pipeline {
     agent any
 
@@ -88,23 +34,77 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
+                echo 'Building Docker Image'
                 script {
-                    echo 'Building Docker Image'
-                    docker_image = "docker build -t ${IMAGE_NAME} ."
+                    sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
                 }
             }
         }
+
+        stage('Build Docker Image Latest') {
+            steps {
+                echo 'Building Docker Image with latest tag'
+                script {
+                        sh "docker build -t ${IMAGE_NAME}:latest ."
+                }
+            }
+        }
+
 
         stage('Push docker image') {
             steps {
                 script {
                     echo 'Pushing Docker Image'
+                    echo "IMAGE_TAG: ${IMAGE_TAG}" // Add this line for debugging
                     docker.withRegistry('', REGISTRY_CREDS) {
-                        docker_image.push("${BUILD_NUMBER}".toLowerCase())
-                        docker_image.push('latest')
+                        sh "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
+                        sh "docker push ${IMAGE_NAME}:latest"
+                    }   
+                }
+            }
+        }
+
+        stage('Delete Docker Images'){
+            steps{
+                script{
+
+                    sh "docker rmi ${IMAGE_NAME}:${IMAGE_TAG}"
+                    sh "docker rmi ${IMAGE_NAME}:latest"
+                }
+            }
+        }
+
+        stage('Updating kubernetes deployment file'){
+            steps{
+                script{
+
+                    sh """
+                    cat deployment.yaml
+                    sed -i 's/${APP_NAME}.*/${APP_NAME}:${IMAGE_TAG}/g' deployment.yaml
+                    cat deployment.yaml
+                    """
+                }
+            }
+        }
+
+        stage('Push the changed deployment file to Git'){
+            steps{
+                script{
+                    sh """
+                     git config --global user.name "TonyMarzano"
+                     git config --global user.email "marzanosantino@gmail.com"
+                     git add deployment.yaml
+                     git commit -m "Updated the deployment.yaml"
+                     
+                    """
+                    withCredentials([gitUsernamePassword(credentialsId: 'github', gitToolName: 'Default')]) {
+                        sh "git push 'https://github.com/TonyMarzano/gitops-argocd-project.git' main"
                     }
                 }
             }
         }
     }
 }
+
+//GitHub: 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
+Dockerhub: dckr_pat_NsoshWUPccpoMCQYSPezRDWK3fI
